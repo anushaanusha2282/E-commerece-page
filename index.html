@@ -1,49 +1,125 @@
-<!-- home.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>E-Commerce Store</title>
-    <link rel="stylesheet" href="styles.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>E-commerce Website</title>
+  <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
-    <header>
-        <div class="logo">
-            <h1>My E-Store</h1>
+<body class="bg-gray-100 p-6">
+  <div class="max-w-5xl mx-auto">
+    <!-- Navigation -->
+    <div class="flex gap-4 mb-6">
+      <button onclick="showPage('home')" class="px-4 py-2 bg-blue-500 text-white rounded-xl">Home</button>
+      <button onclick="showPage('dashboard')" class="px-4 py-2 bg-green-500 text-white rounded-xl">Dashboard</button>
+      <button onclick="showPage('checkout')" class="px-4 py-2 bg-yellow-500 text-white rounded-xl">
+        Checkout (<span id="cartCount">0</span>)
+      </button>
+    </div>
+
+    <!-- Pages -->
+    <div id="homePage" class="grid grid-cols-1 md:grid-cols-3 gap-4"></div>
+    <div id="productDetail" class="hidden"></div>
+    <div id="checkoutPage" class="hidden"></div>
+    <div id="dashboardPage" class="hidden"></div>
+  </div>
+
+  <script>
+    const products = [
+      { id: 1, name: 'Laptop', price: 75000, description: 'High-performance laptop.', image: 'https://via.placeholder.com/300x200' },
+      { id: 2, name: 'Phone', price: 30000, description: 'Latest smartphone.', image: 'https://via.placeholder.com/300x200' },
+      { id: 3, name: 'Headphones', price: 5000, description: 'Noise-cancelling headphones.', image: 'https://via.placeholder.com/300x200' },
+    ];
+    let cart = [];
+
+    function renderProducts() {
+      const container = document.getElementById('homePage');
+      container.innerHTML = products.map(p => `
+        <div class="bg-white shadow-lg rounded-2xl p-4">
+          <img src="${p.image}" class="rounded-xl mb-3"/>
+          <h2 class="text-xl font-bold mb-2">${p.name}</h2>
+          <p class="text-gray-600 mb-2">₹${p.price}</p>
+          <button onclick="viewProduct(${p.id})" class="px-3 py-2 bg-blue-500 text-white rounded-xl">View Details</button>
         </div>
-        <nav>
-            <ul>
-                <li><a href="home.html">Home</a></li>
-                <li><a href="checkout.html">Checkout</a></li>
-                <li><a href="admin-dashboard.html">Admin</a></li>
-            </ul>
-        </nav>
-    </header>
+      `).join('');
+    }
 
-    <main>
-        <h2>Featured Products</h2>
-        <div class="product-list">
-            <!-- Sample Product -->
-            <div class="product-item">
-                <img src="product1.jpg" alt="Product 1">
-                <h3>Product Name</h3>
-                <p>$100</p>
-                <a href="product-detail.html?id=1">View Details</a>
-            </div>
+    function viewProduct(id) {
+      const p = products.find(x => x.id === id);
+      hideAllPages();
+      const detail = document.getElementById('productDetail');
+      detail.classList.remove('hidden');
+      detail.innerHTML = `
+        <img src="${p.image}" class="rounded-xl mb-4 w-full" />
+        <h1 class="text-2xl font-bold mb-2">${p.name}</h1>
+        <p class="mb-2">${p.description}</p>
+        <p class="font-semibold mb-4">Price: ₹${p.price}</p>
+        <button onclick="addToCart(${p.id})" class="px-4 py-2 bg-green-500 text-white rounded-xl">Add to Cart</button>
+        <button onclick="showPage('home')" class="ml-2 px-4 py-2 bg-gray-400 text-white rounded-xl">Back</button>
+      `;
+    }
 
-            <!-- More Products -->
-            <div class="product-item">
-                <img src="product2.jpg" alt="Product 2">
-                <h3>Product Name</h3>
-                <p>$200</p>
-                <a href="product-detail.html?id=2">View Details</a>
-            </div>
+    function addToCart(id) {
+      const p = products.find(x => x.id === id);
+      cart.push(p);
+      updateCartCount();
+      alert(p.name + ' added to cart!');
+    }
+
+    function updateCartCount() {
+      document.getElementById('cartCount').innerText = cart.length;
+    }
+
+    function showPage(page) {
+      hideAllPages();
+      if (page === 'home') {
+        document.getElementById('homePage').classList.remove('hidden');
+      } else if (page === 'checkout') {
+        renderCheckout();
+        document.getElementById('checkoutPage').classList.remove('hidden');
+      } else if (page === 'dashboard') {
+        renderDashboard();
+        document.getElementById('dashboardPage').classList.remove('hidden');
+      }
+    }
+
+    function hideAllPages() {
+      document.getElementById('homePage').classList.add('hidden');
+      document.getElementById('productDetail').classList.add('hidden');
+      document.getElementById('checkoutPage').classList.add('hidden');
+      document.getElementById('dashboardPage').classList.add('hidden');
+    }
+
+    function renderCheckout() {
+      const checkout = document.getElementById('checkoutPage');
+      if (cart.length === 0) {
+        checkout.innerHTML = '<p>Your cart is empty.</p>';
+      } else {
+        checkout.innerHTML = `
+          <h1 class="text-2xl font-bold mb-4">Checkout</h1>
+          <ul class="mb-4">
+            ${cart.map(item => `<li class="flex justify-between border-b py-2">${item.name} <span>₹${item.price}</span></li>`).join('')}
+          </ul>
+          <p class="text-lg font-semibold mb-4">Total: ₹${cart.reduce((s,i) => s + i.price, 0)}</p>
+          <input type="text" placeholder="Enter Address" class="border rounded p-2 w-full mb-3" />
+          <button class="w-full px-4 py-2 bg-green-500 text-white rounded-xl" onclick="alert('Order placed!')">Place Order</button>
+        `;
+      }
+    }
+
+    function renderDashboard() {
+      const dashboard = document.getElementById('dashboardPage');
+      dashboard.innerHTML = `
+        <h1 class="text-2xl font-bold mb-4">Dashboard</h1>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+          <div class="bg-white p-4 rounded-xl shadow">Total Products: ${products.length}</div>
+          <div class="bg-white p-4 rounded-xl shadow">Items in Cart: ${cart.length}</div>
+          <div class="bg-white p-4 rounded-xl shadow">Total Sales: ₹${cart.reduce((s,i) => s + i.price, 0)}</div>
         </div>
-    </main>
+      `;
+    }
 
-    <footer>
-        <p>© 2025 My E-Store</p>
-    </footer>
+    renderProducts();
+  </script>
 </body>
 </html>
